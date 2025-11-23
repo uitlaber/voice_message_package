@@ -20,17 +20,21 @@ class Noises extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: rList
-          .map(
-            (e) => SingleNoise(
+    return IntrinsicHeight(
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemCount: rList.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 2),
+            child: SingleNoise(
               activeSliderColor: activeSliderColor,
-              height: e,
+              height: rList[index], 
             ),
-          )
-          .toList(),
+          );
+        },
+      ),
     );
   }
 }
