@@ -110,27 +110,40 @@ class VoiceController extends MyTicker {
 
   Future play() async {
     try {
+      debugPrint('[VoiceController] Starting playback - isFile: $isFile');
       playStatus = PlayStatus.downloading;
       _updateUi();
       if (isFile) {
+        debugPrint('[VoiceController] Getting file from cache (local file)');
         final path = await _getFileFromCache();
+        debugPrint('[VoiceController] Got path: $path');
         await startPlaying(path);
+        debugPrint('[VoiceController] Started playing');
         onPlaying();
       } else {
+        debugPrint('[VoiceController] Starting download from URL: $audioSrc');
         downloadStreamSubscription = _getFileFromCacheWithProgress().listen((
           FileResponse fileResponse,
         ) async {
+          debugPrint(
+              '[VoiceController] File response: ${fileResponse.runtimeType}');
           if (fileResponse is FileInfo) {
+            debugPrint(
+                '[VoiceController] FileInfo received, starting playback');
             await startPlaying(fileResponse.file.path);
+            debugPrint('[VoiceController] Playback started');
             onPlaying();
           } else if (fileResponse is DownloadProgress) {
             _updateUi();
             // print(downloadProgress);
             downloadProgress = fileResponse.progress;
+            debugPrint(
+                '[VoiceController] Download progress: ${fileResponse.progress}');
           }
         });
       }
     } catch (err) {
+      debugPrint('[VoiceController] Error during playback: $err');
       playStatus = PlayStatus.downloadError;
       _updateUi();
       if (onError != null) {
@@ -174,9 +187,8 @@ class VoiceController extends MyTicker {
   Future startPlaying(String path) async {
     // Use AudioSource.file for local files (works on all platforms including Windows)
     // Use AudioSource.uri for remote URLs
-    final audioSource = isFile
-        ? AudioSource.file(path)
-        : AudioSource.uri(Uri.parse(path));
+    final audioSource =
+        isFile ? AudioSource.file(path) : AudioSource.uri(Uri.parse(path));
 
     await _player.setAudioSource(audioSource, initialPosition: currentDuration);
     _player.play();
@@ -320,9 +332,8 @@ class VoiceController extends MyTicker {
     try {
       /// Use setAudioSource instead of deprecated setFilePath/setUrl
       /// This works on all platforms including Windows
-      final audioSource = isFile
-          ? AudioSource.file(path)
-          : AudioSource.uri(Uri.parse(path));
+      final audioSource =
+          isFile ? AudioSource.file(path) : AudioSource.uri(Uri.parse(path));
 
       final maxDuration = await _player.setAudioSource(audioSource);
 
@@ -360,6 +371,7 @@ class VoiceController extends MyTicker {
 /// It can be used to create animations or perform actions at regular intervals.
 class MyTicker extends TickerProvider {
   @override
+
   /// Creates a new ticker.
   Ticker createTicker(TickerCallback onTick) {
     return Ticker(onTick);
